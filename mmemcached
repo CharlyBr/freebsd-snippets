@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# PROVIDE: mmemcached
+# REQUIRE: DAEMON
+#
+# Add the following lines to /etc/rc.conf to enable mmemcached:
+#
+# mmemcached_enable (bool):         Set it to "YES" to enable postfix.
+#                                   Default is "NO".
+# mmemcached_servers (numbers):     Set list of servers to create
+#                                   list of numbers used in ports configuration
+#                                   "1 2" will start daemons on ports 11211 and 11212
+# mmemcached_user (str):            Set user that runs the daemon(s)
+#                                   -u username
+#                                   Default is nobody
+# mmemcached_args (str):            Flags passed to memcached daemon
+#                                   Default are "-c 8192 -m 64 -d".
+#
+# notes:
+# mkdir /var/run/memcached
+# chown nobody /var/run/memcached/ # if nobody is the user that runs the daemon(s)
+
+. /etc/rc.subr
+
+name="mmemcached"
+rcvar=`set_rcvar`
+
+load_rc_config $name
+
+: ${mmemcached_servers="1"}
+: ${mmemcached_user="nobody"}
+: ${mmemcached_args="-c 8192 -m 64 -d"}
+
+command=/usr/local/bin/memcached
+command_args="-u ${mmemcached_user} ${mmemcached_args}"
+
+start_cmd=${name}_start
+stop_cmd=${name}_stop
+extra_commands="reload"
+
+mmemcached_start() {
+	for server in ${mmemcached_servers}; do
+		echo "lauching $server : ${command_args} :: ${mmemcached_args}"
+		${command} ${command_args} -p 1121${server} -P /var/run/memcached/memcached_1121${server}.pid
+	done
+}
+
+mmemcached_stop() {
+	for server in ${mmemcached_servers}; do
+		if [ -e /var/run/memcached/memcached_1121${server}.pid ]; then
+        		kill `cat /var/run/memcached/memcached_1121${server}.pid`
+        		rm /var/run/memcached/memcached_1121${server}.pid
+		else
+			echo "pid file not found"
+		fi	
+	done
+}
+
+run_rc_command "$1"
