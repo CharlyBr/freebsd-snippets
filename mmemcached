@@ -46,13 +46,9 @@ mmemcached_start() {
 }
 
 mmemcached_stop() {
-	for server in ${mmemcached_servers}; do
-		if [ -e /var/run/memcached/memcached_1121${server}.pid ]; then
-        		kill `cat /var/run/memcached/memcached_1121${server}.pid`
-        		rm /var/run/memcached/memcached_1121${server}.pid
-		else
-			echo "pid file not found"
-		fi	
+	for pid in `ls /var/run/memcached/*.pid`; do
+        kill `cat ${pid}`
+        rm ${pid}
 	done
 }
 
