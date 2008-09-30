@@ -40,7 +40,6 @@ extra_commands="reload"
 
 mmemcached_start() {
 	for server in ${mmemcached_servers}; do
-		echo "lauching $server : ${command_args} :: ${mmemcached_args}"
 		${command} ${command_args} -p 1121${server} -P /var/run/memcached/memcached_1121${server}.pid
 	done
 }
